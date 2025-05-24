@@ -19,14 +19,18 @@ class ListHomeCommand : CommandExecutor {
             return true
         }
 
-        val homes = getHomes(player.uniqueId)
-        if(homes == null){
-            player.sendMessage("§cホーム一覧の取得中にエラーが発生しました。")
-        }else{
-            player.sendMessage("§7[§eListHome§7] §aあなたが登録しているホームは以下の通りです。")
-            homes.forEach { player.sendMessage("§7・§f${it}") }
+        try{
+            val homes = getHomes(player.uniqueId)
+            if(homes == null){
+                player.sendMessage("§cホーム一覧の取得中にエラーが発生しました。")
+            }else{
+                player.sendMessage("§7[§eListHome§7] §aあなたが登録しているホームは以下の通りです。")
+                homes.forEach { player.sendMessage("§7・§f${it}") }
+                player.sendMessage("§c※反映まで最大24時間かかります。")
+            }
+        }catch (e: HomeNotFoundException){
+            player.sendMessage("§c登録されているホームが見つかりませんでした！")
             player.sendMessage("§c※反映まで最大24時間かかります。")
-
         }
         return true
     }
@@ -38,9 +42,7 @@ class ListHomeCommand : CommandExecutor {
         val yaw: Double,
         val pitch: Double
     )
-    data class Homes(
-        var homes: Map<String, List<Map<String, Any>>>
-    )
+    class HomeNotFoundException : Exception()
     private fun getHomes(uuid: UUID): Set<String>?{
         try{
             val yaml = Yaml()
@@ -48,8 +50,8 @@ class ListHomeCommand : CommandExecutor {
             val dataPath = parentPath + File.separator + "plugins" + File.separator + "SetHome" + File.separator + "homes.yml"
             val inputStream = FileInputStream(dataPath)
             val data = yaml.load(inputStream) as Map<String, Map<String, Home>>
-            return data.get(uuid.toString())?.keys
-        }catch (e: Exception){ e.printStackTrace() }
-        return null
+            if(data.containsKey(uuid.toString())) return data.get(uuid.toString())?.keys
+        }catch (_: Exception){ return null }
+        throw HomeNotFoundException()
     }
 }
