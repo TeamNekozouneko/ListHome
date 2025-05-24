@@ -4,5 +4,9 @@ main: com.nekozouneko.listHome.ListHome
 api-version: '1.21'
 author: RunQ
 description: SetHomeプラグインにlisthomeコマンドを追加するだけのプラグイン
-softdepends:
+softdepend:
   - SetHome
+
+commands:
+  listhome:
+    description: "SetHomeのホーム一覧を表示するコマンド"
